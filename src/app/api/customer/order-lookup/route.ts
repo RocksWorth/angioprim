@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '../../../../../lib/firebase';
+import { getDb } from '../../../../../lib/firebase';
 import { z } from 'zod';
 
 export const runtime = "nodejs";
@@ -44,6 +44,7 @@ export async function POST(request: NextRequest) {
 
     // Query Firestore for the specific order
     // Must match BOTH email and order ID for security
+    const db = getDb();
     const ordersSnapshot = await db.collection('orders')
       .where('id', '==', orderNumber)
       .where('email', '==', email.toLowerCase())

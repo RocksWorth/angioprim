@@ -1,23 +1,33 @@
-import { initializeApp, getApps, cert } from 'firebase-admin/app';
-import { getFirestore } from 'firebase-admin/firestore';
+import { initializeApp, getApps, cert, type App } from 'firebase-admin/app';
+import { getFirestore, type Firestore } from 'firebase-admin/firestore';
 
-// Initialize Firebase Admin SDK for server-side operations
-let app;
-if (getApps().length === 0) {
-  app = initializeApp({
-    credential: cert({
-      projectId: process.env.FIREBASE_PROJECT_ID,
-      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-      privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-    }),
-    projectId: process.env.FIREBASE_PROJECT_ID,
-  });
-} else {
-  app = getApps()[0];
+// Lazy initializer to avoid running at build time
+let firebaseApp: App | null = null;
+let firestoreDb: Firestore | null = null;
+
+export function getDb(): Firestore {
+  if (firestoreDb) return firestoreDb;
+
+  if (!firebaseApp) {
+    const projectId = process.env.FIREBASE_PROJECT_ID;
+    const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
+    const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n');
+
+    if (!projectId || !clientEmail || !privateKey) {
+      throw new Error('Firebase configuration is missing. Set FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, and FIREBASE_PRIVATE_KEY');
+    }
+
+    firebaseApp = getApps().length
+      ? getApps()[0]
+      : initializeApp({
+          credential: cert({ projectId, clientEmail, privateKey }),
+          projectId,
+        });
+  }
+
+  firestoreDb = getFirestore(firebaseApp);
+  return firestoreDb;
 }
-
-// Initialize Firestore
-export const db = getFirestore(app);
 
 // Types
 export interface Order {

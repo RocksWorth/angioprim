@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { stripe } from '../../../../../lib/stripe';
-import { db } from '../../../../../lib/firebase';
+import { getDb } from '../../../../../lib/firebase';
 import { gmailEmailService } from '../../../../lib/gmail-email';
 import Stripe from 'stripe';
 
@@ -113,6 +113,7 @@ export async function POST(request: NextRequest) {
 
       // Save order to Firestore using Admin SDK
       console.log('Saving order to Firestore...');
+      const db = getDb();
       await db.collection('orders').add(orderData);
       console.log('Order saved to Firestore:', orderData.id);
 
