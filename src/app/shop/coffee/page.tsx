@@ -43,8 +43,8 @@ export default function CoffeePage(){
 }
 
 function Card({ pid, name, img, blurb, description, benefits }:{pid:string;name:string;img:string;blurb?:string;description:string;benefits:string[];}){
-  const [size,setSize]=useState<Size>("12oz");
-  const [blend,setBlend]=useState<Blend>("regular");
+  const [size,setSize]=useState<Size>("300g");
+  const [blend,setBlend]=useState<Blend>("standard");
   const [bags,setBags]=useState(1); // number of bags
   const price = priceFor(pid, size, blend) ?? 0;
   const total = useMemo(()=> price * bags, [price,bags]);
@@ -68,24 +68,42 @@ function Card({ pid, name, img, blurb, description, benefits }:{pid:string;name:
         <div className="mb-4">
           <h3 className="text-xl font-semibold text-gray-900">{name}</h3>
           {blurb && <p className="text-gray-600 text-sm mt-1">{blurb}</p>}
+          <p className="text-gray-700 text-sm mt-2">{description}</p>
         </div>
 
-        <div className="grid grid-cols-3 gap-3">
+        {/* Benefits */}
+        <div className="mb-4">
+          <h4 className="text-sm font-medium text-gray-700 mb-2">Key Benefits</h4>
+          <div className="grid grid-cols-2 gap-2">
+            {benefits.map((benefit, index) => (
+              <div key={index} className="flex items-center text-xs text-gray-600">
+                <span className="w-1.5 h-1.5 bg-green-500 rounded-full mr-2"></span>
+                {benefit}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Pack</label>
-            <select className="w-full rounded-lg border-2 border-gray-300 px-3 py-2 bg-white text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-colors" value={pack} onChange={e=>setPack(Number(e.target.value) as Pack)}>
-              {PACKS.map(p=><option key={p} value={p} className="text-gray-900 bg-white">{p}</option>)}
+            <label className="block text-sm font-medium text-gray-700 mb-2">Size</label>
+            <select className="w-full rounded-lg border-2 border-gray-300 px-3 pr-10 py-2 bg-white text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-colors whitespace-nowrap" value={size} onChange={e=>setSize(e.target.value as Size)}>
+              {SIZES.map(s=><option key={s} value={s} className="text-gray-900 bg-white">{s}</option>)}
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Sides</label>
-            <select className="w-full rounded-lg border-2 border-gray-300 px-3 py-2 bg-white text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-colors" value={side} onChange={e=>setSide(e.target.value as Side)}>
-              {SIDES.map(s=><option key={s} value={s} className="text-gray-900 bg-white">{s==="single"?"Single-sided":"Double-sided"}</option>)}
+            <label className="block text-sm font-medium text-gray-700 mb-2">Blend</label>
+            <select className="w-full rounded-lg border-2 border-gray-300 px-3 pr-10 py-2 bg-white text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-colors min-h-[44px] leading-6 whitespace-nowrap" value={blend} onChange={e=>setBlend(e.target.value as Blend)}>
+              {BLENDS.map(b=>(
+                <option key={b} value={b} className="text-gray-900 bg-white">
+                  {b.charAt(0).toUpperCase() + b.slice(1)}
+                </option>
+              ))}
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Sets</label>
-            <select className="w-full rounded-lg border-2 border-gray-300 px-3 py-2 bg-white text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-colors" value={packs} onChange={e=>setPacks(parseInt(e.target.value))}>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Bags</label>
+            <select className="w-full rounded-lg border-2 border-gray-300 px-3 py-2 bg-white text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-colors" value={bags} onChange={e=>setBags(parseInt(e.target.value))}>
               {Array.from({length:10}).map((_,i)=><option key={i+1} value={i+1} className="text-gray-900 bg-white">{i+1}</option>)}
             </select>
           </div>
@@ -93,14 +111,14 @@ function Card({ pid, name, img, blurb, description, benefits }:{pid:string;name:
 
         <div className="mt-6 space-y-4">
           <div className="text-center">
-            <div className="text-sm text-gray-600">Per set: {money(price)}</div>
+            <div className="text-sm text-gray-600">Per bag: {money(price)}</div>
             <div className="text-2xl font-bold text-blue-600">{money(total)} total</div>
           </div>
 
           <AddToCartButton
-            productId="business-cards"
-            name={`${name} Business Cards`}
-            description={`${pack} cards, ${side}-sided${blurb ? ` - ${blurb}` : ''}`}
+            productId={pid === 'omega3' ? 'omega3-coffee' : 'chelation-coffee'}
+            name={`${name}`}
+            description={`${size} ${blend} blend${blurb ? ` - ${blurb}` : ''}`}
             price={total}
             image={img}
             options={cartOptions}

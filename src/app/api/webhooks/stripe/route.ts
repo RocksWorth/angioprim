@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
       const orderData = {
         id: session.id,
         payment_status: session.payment_status,
-        email: customerDetails.email!,
+        email: (customerDetails.email || '').toLowerCase(),
         phone: customerDetails.phone || undefined,
         shipping: shippingDetails ? {
           name: shippingDetails.name!,

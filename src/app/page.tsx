@@ -4,73 +4,56 @@ import { PremiumProductGrid } from "@/components/sections/premium-product-grid";
 import { SectionHeader } from "@/components/ui/section-header";
 import { PremiumCard } from "@/components/ui/premium-card";
 import { PremiumButton } from "@/components/ui/premium-button";
-import { getBrandConfig } from "@/lib/design-system";
 import Link from "next/link";
 
 export default function HomePage() {
-  const brandConfig = getBrandConfig();
+  const brandConfig = { name: 'Anagioprim Healthy Coffee', tagline: 'Smart Coffee for Heart & Brain', description: 'Premium coffee infused with vegan omega‑3s and chelation support.' } as const;
   
   // Featured products data
   const featuredProducts = [
     {
-      id: 'business-cards',
-      name: 'Business Cards',
-      description: 'Professional business cards that make lasting impressions. Premium materials and finishes available.',
-      image: '/products/business-cards/featured.jpg',
-      href: '/shop/business-cards',
-      badge: 'Most Popular',
+      id: 'omega3',
+      name: 'Omega3 Coffee',
+      description: 'Plant‑based omega‑3s meet high‑quality, single‑origin coffee. Clean label, non‑GMO, no synthetic additives.',
+      image: '/products/coffee/omega3.svg',
+      href: '/shop/coffee',
+      badge: 'Best Seller',
       popular: true,
-      features: ['Premium Paper Stock', 'Multiple Finishes', 'Fast Turnaround'],
-      price: 'From $24.99',
+      features: ['Vegan Omega‑3', 'Heart & Brain Support', 'No Fishy Taste'],
+      price: 'From $39.99',
     },
     {
-      id: 'flyers',
-      name: 'Marketing Flyers',
-      description: 'Eye-catching flyers for events, promotions, and marketing campaigns. High-quality printing guaranteed.',
-      image: '/products/flyers/featured.jpg',
-      href: '/shop/flyers',
-      features: ['Vibrant Colors', 'Various Sizes', 'Bulk Discounts'],
-      price: 'From $19.99',
-    },
-    {
-      id: 'postcards',
-      name: 'Custom Postcards',
-      description: 'Beautiful postcards for marketing, announcements, or personal use. Professional design and printing.',
-      image: '/products/postcards/featured.jpg',
-      href: '/shop/postcards',
-      features: ['High-Quality Images', 'Custom Sizes', 'Matte & Gloss Options'],
-      price: 'From $14.99',
-    },
-    {
-      id: 'stickers',
-      name: 'Custom Stickers',
-      description: 'Durable, weather-resistant stickers for branding, labeling, or promotional use.',
-      image: '/products/stickers/featured.jpg',
-      href: '/shop/stickers',
-      features: ['Waterproof', 'Die-Cut Options', 'Various Materials'],
-      price: 'From $9.99',
+      id: 'chelation',
+      name: 'Chelation Coffee',
+      description: 'Chelation‑supporting blend crafted for daily wellness. Single‑origin, ethically sourced, medium roast.',
+      image: '/products/coffee/chelation.svg',
+      href: '/shop/coffee',
+      badge: 'New',
+      popular: false,
+      features: ['Chelation Support', 'Clean Label', 'Non‑GMO'],
+      price: 'From $44.99',
     },
   ];
 
-  // Features data
+  // Coffee-focused benefits
   const features = [
     {
-      icon: "⚡",
-      title: "Lightning Fast",
-      description: "Express production with most orders shipping within 24-48 hours of approval.",
-      gradient: "from-yellow-400 to-orange-500"
+      icon: "🧠",
+      title: "Sustained Focus",
+      description: "Natural caffeine + omega‑3s for smooth, crash‑free energy.",
+      gradient: "from-amber-400 to-rose-500"
     },
     {
-      icon: "🎨",
-      title: "Premium Quality",
-      description: "Museum-grade materials and state-of-the-art printing technology for exceptional results.",
-      gradient: "from-purple-400 to-pink-500"
+      icon: "❤️",
+      title: "Heart & Brain Support",
+      description: "Daily support for cardiovascular and cognitive health.",
+      gradient: "from-rose-400 to-orange-500"
     },
     {
-      icon: "🚚",
-      title: "White-Glove Service",
-      description: "Complimentary shipping on orders over $50 with premium packaging and tracking.",
-      gradient: "from-blue-400 to-cyan-500"
+      icon: "🌱",
+      title: "Clean, Vegan Omega‑3",
+      description: "No fishy taste. Non‑GMO, clean label ingredients.",
+      gradient: "from-green-400 to-amber-500"
     }
   ];
 
@@ -81,45 +64,49 @@ export default function HomePage() {
       {/* Hero Section */}
       <PremiumHero
         badge={brandConfig.tagline}
-        title="Elegant Print Solutions"
-        description={brandConfig.description}
+        title="Omega3 Coffee • Chelation Coffee"
+        description="Premium coffee infused with ultra‑pure, plant‑based omega‑3s and chelation support. Designed to support focus, heart health, and inflammation response without compromising taste or performance."
         actions={[
           {
-            label: 'Explore Collection',
-            href: '/shop',
+            label: 'Shop Coffee',
+            href: '/shop/coffee',
             variant: 'gradient',
           },
           {
-            label: 'Business Cards',
-            href: '/shop/business-cards',
+            label: 'View Cart',
+            href: '/cart',
             variant: 'outline',
           },
         ]}
-        backgroundVariant="gradient"
+        backgroundVariant="minimal"
         floatingElements
+        image={{ src: '/products/coffee/bag.svg', alt: 'AngioPrim Coffee Bag' }}
       />
 
-      {/* Featured Products */}
+      {/* Featured Coffee */}
       <PremiumProductGrid
-        badge="Premium Collection"
-        title="Our Signature Products"
-        subtitle="Meticulously Crafted"
-        description="Professional printing solutions that elevate your brand presence with exceptional quality and attention to detail."
-        products={featuredProducts}
-        columns={4}
+        badge="Healthy Coffee"
+        title="Our Coffee Blends"
+        subtitle="Crafted for Daily Life"
+        description="Two functional coffees: Omega3 for heart & brain support, and Chelation for daily wellness."
+        products={featuredProducts.map(p => ({
+          ...p,
+          image: p.id === 'omega3' ? '/products/coffee/cup.svg' : '/products/coffee/beans.svg'
+        }))}
+        columns={2}
         variant="luxury"
         showPricing={true}
-        className="bg-slate-50"
+        className="bg-amber-50/40"
       />
 
-      {/* Features Section */}
-      <section className="py-20 lg:py-32 bg-gradient-to-br from-white via-blue-50/30 to-purple-50/30">
+      {/* Why Choose Us */}
+      <section className="py-20 lg:py-32 bg-gradient-to-br from-white via-amber-50/40 to-rose-50/40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <SectionHeader
             badge="Why Choose Us"
-            title="The VersatilePrint Difference"
-            subtitle="Excellence in Every Detail"
-            description="Where luxury meets efficiency in professional printing services."
+            title="Why Choose Anagioprim Healthy Coffee"
+            subtitle="Clean, Functional Coffee"
+            description="Backed by science. Crafted for daily life. Loved by high‑performers."
             className="mb-16"
           />
           
@@ -154,9 +141,9 @@ export default function HomePage() {
         
         <div className="relative max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
           <SectionHeader
-            title="Ready to Elevate Your Brand?"
-            subtitle="Transform Your Vision"
-            description="Join thousands of satisfied customers who trust VersatilePrint for their premium printing needs."
+            title="Fuel Your Day With Smart Coffee"
+            subtitle="Backed by science. Loved by high‑performers."
+            description="No fishy taste. Just clean, vegan omega‑3 performance in every sip."
             align="center"
             className="text-white [&_h2]:text-white [&_p]:text-blue-100 [&_.font-light]:text-blue-100 mb-12"
           />
@@ -168,7 +155,7 @@ export default function HomePage() {
               glow
               className="transform hover:scale-105 transition-all duration-300"
             >
-              Start Your Luxury Print Journey
+              Shop Anagioprim Healthy Coffee
             </PremiumButton>
           </Link>
         </div>
@@ -178,21 +165,10 @@ export default function HomePage() {
       <footer className="bg-white border-t border-slate-200 py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <h3 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">
-              {brandConfig.name}
+            <h3 className="text-2xl font-bold bg-gradient-to-r from-amber-700 to-rose-600 bg-clip-text text-transparent mb-4">
+              Anagioprim Healthy Coffee
             </h3>
-            <p className="text-slate-600 font-light text-lg">
-              Where luxury printing meets exceptional service
-            </p>
-            <div className="mt-8 flex justify-center items-center space-x-8 text-slate-400">
-              <span>•</span>
-              <span className="text-slate-600">Premium Quality</span>
-              <span>•</span>
-              <span className="text-slate-600">Fast Delivery</span>
-              <span>•</span>
-              <span className="text-slate-600">Trusted Service</span>
-              <span>•</span>
-            </div>
+            <p className="text-slate-600 font-light text-lg">Clean label • Non‑GMO • Ethically sourced • Medium roast</p>
           </div>
         </div>
       </footer>

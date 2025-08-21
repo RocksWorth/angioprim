@@ -3,100 +3,30 @@ import { PremiumHero } from '@/components/sections/premium-hero';
 import { PremiumProductGrid } from '@/components/sections/premium-product-grid';
 import { PremiumCard } from '@/components/ui/premium-card';
 import { SectionHeader } from '@/components/ui/section-header';
-import { getBrandConfig } from '@/lib/design-system';
 
 const PRODUCTS = [
   {
-    id: 'business-cards',
-    name: 'Business Cards',
-    description: 'Luxury networking essentials with premium finishes. Available in 14pt matte, 13pt enviro, and 18pt writable stocks.',
-    image: '/products/business-cards/featured.jpg',
-    href: '/shop/business-cards',
-    price: 'From $24.99',
-    badge: 'Most Popular',
-    popular: true,
-    features: ['Premium Paper Stock', 'Multiple Finishes', 'Fast Turnaround', 'Professional Design']
-  },
-  {
-    id: 'flyers',
-    name: 'Premium Flyers',
-    description: 'Eye-catching promotional art perfect for events, campaigns, and marketing. Multiple sizes and premium paper options.',
-    image: '/products/flyers/featured.jpg',
-    href: '/shop/flyers',
-    price: 'From $17.99',
-    badge: 'Best Value',
-    features: ['Vibrant Colors', 'Various Sizes', 'Bulk Discounts', 'Quick Production']
-  },
-  {
-    id: 'postcards',
-    name: 'Custom Postcards',
-    description: 'Direct mail excellence with UV coating for maximum impact. Perfect for targeted marketing campaigns.',
-    image: '/products/postcards/featured.jpg',
-    href: '/shop/postcards',
-    price: 'From $14.99',
-    badge: 'Fast Turnaround',
-    features: ['UV Coating', 'Direct Mail Ready', 'Custom Sizes', 'High Impact Design']
-  },
-  {
-    id: 'stickers',
-    name: 'Custom Stickers',
-    description: 'Branded adhesive solutions in custom sizes. Weather-resistant with matte, gloss, or clear premium finishes.',
-    image: '/products/stickers/featured.jpg',
-    href: '/shop/stickers',
-    price: 'From $8.99',
-    badge: 'Trending',
-    features: ['Weather Resistant', 'Die-Cut Options', 'Various Materials', 'Custom Shapes']
-  },
-  {
-    id: 'brochures',
-    name: 'Luxury Brochures',
-    description: 'Professional tri-fold and bi-fold brochures with premium paper and finishing. Perfect for showcasing services.',
-    image: '/products/brochures/featured.jpg',
-    href: '/shop/brochures',
-    price: 'From $32.99',
-    badge: 'Coming Soon',
-    features: ['Tri-fold & Bi-fold', 'Premium Paper', 'Professional Finish', 'Custom Design']
-  },
-  {
-    id: 'posters',
-    name: 'Large Format Posters',
-    description: 'Premium large format posters for advertising and events. Available in multiple sizes up to 24x36 inches.',
-    image: '/products/posters/featured.jpg',
-    href: '/shop/posters',
-    price: 'From $19.99',
-    badge: 'Coming Soon',
-    features: ['Large Format', 'Indoor/Outdoor', 'Multiple Sizes', 'Professional Grade']
+    id: 'coffee',
+    name: 'Omega3 & Chelation Coffee',
+    description: 'Premium coffee infused with vegan omega‑3s and chelation support. 300g bags.',
+    image: '/products/coffee/featured.jpg',
+    href: '/shop/coffee',
+    price: 'From $29.99',
+    badge: 'Healthy Choice',
+    features: ['Vegan Omega‑3', 'Chelation Support', 'Non‑GMO', 'Medium Roast']
   }
 ];
 
 // Available products
-const availableProducts = PRODUCTS.filter(product => 
-  ['business-cards', 'flyers', 'postcards', 'stickers'].includes(product.id)
-);
+const availableProducts = PRODUCTS;
 
 export default function ShopIndex() {
-  const brandConfig = getBrandConfig();
 
-  // Features data
+  // Coffee-focused benefits
   const features = [
-    {
-      icon: "⚡",
-      title: "Lightning Fast",
-      description: "Express production with most orders shipping within 24-48 hours of approval.",
-      gradient: "from-yellow-400 to-orange-500"
-    },
-    {
-      icon: "🎨",
-      title: "Premium Quality",
-      description: "Museum-grade materials and state-of-the-art printing technology for exceptional results.",
-      gradient: "from-purple-400 to-pink-500"
-    },
-    {
-      icon: "🚚",
-      title: "White-Glove Service",
-      description: "Complimentary shipping on orders over $50 with premium packaging and tracking.",
-      gradient: "from-blue-400 to-cyan-500"
-    }
+    { icon: "🧠", title: "Sustained Focus", description: "Natural caffeine + omega‑3s for smooth, crash‑free energy.", gradient: "from-amber-400 to-rose-500" },
+    { icon: "❤️", title: "Heart & Brain Support", description: "Daily support for cardiovascular and cognitive health.", gradient: "from-rose-400 to-orange-500" },
+    { icon: "🌱", title: "Clean, Vegan Omega‑3", description: "No fishy taste. Non‑GMO, clean label ingredients.", gradient: "from-green-400 to-amber-500" },
   ];
 
   return (
@@ -105,19 +35,19 @@ export default function ShopIndex() {
       
       {/* Hero Section */}
       <PremiumHero
-        badge="🎨 Premium Print Solutions • Professional Quality • Fast Delivery"
-        title="Premium Collection"
-        subtitle="Luxury Printing Solutions"
-        description="Discover our curated selection of luxury printing solutions. Each product is crafted with attention to detail and premium materials to elevate your brand presence."
+        badge="Anagioprim Healthy Coffee"
+        title="Omega3 Coffee • Chelation Coffee"
+        subtitle="Smart Coffee for Heart & Brain"
+        description="Premium coffee infused with ultra‑pure, plant‑based omega‑3s and chelation support—without the fishy taste."
         actions={[
           {
-            label: 'Browse Products',
-            href: '#products',
+            label: 'Shop Coffee',
+            href: '/shop/coffee',
             variant: 'gradient',
           },
           {
-            label: 'Custom Quote',
-            href: '/contact',
+            label: 'View Cart',
+            href: '/cart',
             variant: 'outline',
           },
         ]}
@@ -140,85 +70,16 @@ export default function ShopIndex() {
         />
       </section>
 
-      {/* Coming Soon Products */}
-      <section className="py-20 lg:py-32 bg-slate-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <SectionHeader
-            badge="Coming Soon"
-            title="Expanding Our Collection"
-            subtitle="More Premium Products"
-            description="We're constantly adding new premium printing solutions to serve your business needs better."
-            className="mb-16"
-          />
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {PRODUCTS.filter(product => 
-              !['business-cards', 'flyers', 'postcards', 'stickers'].includes(product.id)
-            ).map((product, index) => (
-              <PremiumCard
-                key={product.id}
-                variant="glass"
-                className="relative overflow-hidden opacity-75"
-              >
-                {/* Coming Soon Badge */}
-                <div className="absolute top-4 left-4 z-10 bg-gradient-to-r from-slate-600 to-slate-700 text-white px-3 py-1 rounded-full text-sm font-semibold">
-                  {product.badge}
-                </div>
+      {/* Removed Coming Soon section for simplicity */}
 
-                {/* Product Image */}
-                <div className="relative aspect-[4/3] mb-6 overflow-hidden rounded-xl bg-slate-100">
-                  <div className="absolute inset-0 bg-slate-200 flex items-center justify-center">
-                    <span className="bg-white text-slate-700 px-6 py-3 rounded-full font-semibold text-lg shadow-xl">
-                      Coming Soon
-                    </span>
-                  </div>
-                </div>
-
-                {/* Product Content */}
-                <div className="space-y-4">
-                  <div>
-                    <h3 className="text-xl font-bold text-slate-600 mb-2">
-                      {product.name}
-                    </h3>
-                    <p className="text-slate-500 leading-relaxed">
-                      {product.description}
-                    </p>
-                  </div>
-
-                  {/* Features */}
-                  <div className="space-y-2">
-                    {product.features.slice(0, 3).map((feature, featureIndex) => (
-                      <div key={featureIndex} className="flex items-center text-sm text-slate-500">
-                        <div className="w-1.5 h-1.5 bg-slate-400 rounded-full mr-3" />
-                        {feature}
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Pricing */}
-                  <div className="pt-2 border-t border-slate-200">
-                    <p className="text-2xl font-bold text-slate-500">
-                      {product.price}
-                      <span className="text-sm font-normal text-slate-400 ml-1">
-                        estimated
-                      </span>
-                    </p>
-                  </div>
-                </div>
-              </PremiumCard>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Features Section */}
-      <section className="py-20 lg:py-32 bg-gradient-to-br from-white via-blue-50/30 to-purple-50/30">
+      {/* Why Choose Us */}
+      <section className="py-20 lg:py-32 bg-gradient-to-br from-white via-amber-50/40 to-rose-50/40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <SectionHeader
             badge="Why Choose Us"
-            title="The VersatilePrint Promise"
-            subtitle="Excellence in Every Detail"
-            description="Luxury printing with uncompromising quality and service excellence."
+            title="Why Choose Anagioprim Healthy Coffee"
+            subtitle="Clean, Functional Coffee"
+            description="Backed by science. Crafted for daily life. Loved by high‑performers."
             className="mb-16"
           />
           

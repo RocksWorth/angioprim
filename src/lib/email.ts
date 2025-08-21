@@ -21,9 +21,9 @@ class EmailService {
   constructor() {
     this.config = {
       apiKey: process.env.RESEND_API_KEY,
-      fromEmail: process.env.FROM_EMAIL || 'orders@versatileprint.com',
-      adminEmail: process.env.ADMIN_EMAIL || 'admin@versatileprint.com', 
-      companyName: 'VersatilePrint'
+      fromEmail: process.env.FROM_EMAIL || 'orders@angioprim.com',
+      adminEmail: process.env.ADMIN_EMAIL || 'admin@angioprim.com', 
+      companyName: 'AngioPrim'
     };
 
     // Initialize Resend only if API key is available

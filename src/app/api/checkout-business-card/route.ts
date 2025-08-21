@@ -23,8 +23,7 @@ export async function POST(req: NextRequest){
       );
     }
 
-    const siteUrl = process.env.SITE_URL || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-    if(!siteUrl) throw new Error("Missing SITE_URL");
+    const origin = (process.env.SITE_URL || process.env.NEXT_PUBLIC_APP_URL || '').trim() || new URL(req.url).origin;
 
     const { productId, pack, side, packs } = Body.parse(await req.json());
     const product = getBCProduct(productId);
@@ -59,8 +58,8 @@ export async function POST(req: NextRequest){
         sides: side,
         packs: String(packs),
       },
-      success_url: `${siteUrl}/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${siteUrl}/shop/business-cards`,
+      success_url: `${origin}/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${origin}/cart`,
       allow_promotion_codes: true,
     });
 

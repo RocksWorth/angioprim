@@ -1,15 +1,16 @@
 'use client';
 
 import { useState } from 'react';
-import { Header } from '../../components/Header';
-import { Button } from '../../components/Button';
+import { Header } from '@/components/Header';
+import { PremiumCard } from '@/components/ui/premium-card';
+import { PremiumButton } from '@/components/ui/premium-button';
 import Link from 'next/link';
 
-interface OrderDetails {
+interface Order {
   id: string;
   email: string;
   amount_total: number;
-  shipping_cost: number;
+  payment_status: string;
   items: Array<{
     name: string;
     quantity: number;
@@ -26,297 +27,286 @@ interface OrderDetails {
       country: string;
     };
   };
-  createdAt: {
-    seconds: number;
-    nanoseconds: number;
-  };
-  payment_status: string;
+  createdAt: any;
+  trackingNumber?: string;
+}
+
+interface TrackingInfo {
+  status: string;
+  delivery_date?: string;
+  events: Array<{
+    description: string;
+    date: string;
+    location: string;
+  }>;
 }
 
 export default function MyOrdersPage() {
   const [email, setEmail] = useState('');
-  const [orderNumber, setOrderNumber] = useState('');
-  const [order, setOrder] = useState<OrderDetails | null>(null);
+  const [orderId, setOrderId] = useState('');
+  const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [searched, setSearched] = useState(false);
+  const [trackingInfo, setTrackingInfo] = useState<TrackingInfo | null>(null);
+  const [trackingLoading, setTrackingLoading] = useState(false);
 
-  const handleSearch = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!email.trim() || !orderNumber.trim()) {
-      setError('Please enter both email and order number');
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
-    setOrder(null);
-
-    try {
-      const response = await fetch('/api/customer/order-lookup', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: email.trim().toLowerCase(),
-          orderNumber: orderNumber.trim(),
-        }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setOrder(data.order);
-        setSearched(true);
-      } else {
-        const errorData = await response.json();
-        setError(errorData.error || 'Order not found. Please check your email and order number.');
-        setSearched(true);
-      }
-    } catch (error) {
-      setError('Unable to search for orders. Please try again later.');
-      setSearched(true);
-    } finally {
-      setLoading(false);
-    }
+  const formatPrice = (cents: number) => {
+    return `$${(cents / 100).toFixed(2)} CAD`;
   };
 
-  const formatPrice = (priceInCents: number) => {
-    return (priceInCents / 100).toLocaleString('en-CA', {
-      style: 'currency',
-      currency: 'CAD',
-    });
-  };
-
-  const formatDate = (timestamp: { seconds: number; nanoseconds: number }) => {
-    const date = new Date(timestamp.seconds * 1000);
+  const formatDate = (timestamp: any) => {
+    if (!timestamp) return 'Unknown';
+    let date: Date;
+    if (timestamp.toDate) {
+      date = timestamp.toDate();
+    } else if (typeof timestamp === 'object' && typeof timestamp.seconds === 'number') {
+      date = new Date(timestamp.seconds * 1000);
+    } else {
+      date = new Date(timestamp);
+    }
     return date.toLocaleDateString('en-CA', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
       hour: '2-digit',
-      minute: '2-digit',
+      minute: '2-digit'
     });
   };
 
-  const maskOrderId = (id: string) => {
-    // Show only first 4 and last 4 characters for security
-    if (id.length <= 8) return id;
-    return `${id.slice(0, 4)}...${id.slice(-4)}`;
+  const searchOrders = async () => {
+    if (!email.trim() || !orderId.trim()) {
+      alert('Please enter both email and order ID.');
+      return;
+    }
+    setLoading(true);
+    try {
+      const response = await fetch('/api/customer/order-lookup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          email: email.trim().toLowerCase(),
+          orderNumber: orderId.trim()
+        })
+      });
+
+      const data = await response.json();
+      if (response.ok && data.order) {
+        setOrders([data.order]);
+      } else {
+        setOrders([]);
+        alert(data.error || data.message || 'No orders found');
+      }
+    } catch (error) {
+      console.error('Search error:', error);
+      alert('Failed to search orders');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const trackPackage = async (trackingNumber: string) => {
+    setTrackingLoading(true);
+    setTrackingInfo(null);
+    
+    try {
+      const response = await fetch('/api/tracking', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ trackingNumber })
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setTrackingInfo(data.tracking);
+      } else {
+        alert(data.message || 'Unable to track package');
+      }
+    } catch (error) {
+      console.error('Tracking error:', error);
+      alert('Failed to track package');
+    } finally {
+      setTrackingLoading(false);
+    }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
+    <div className="min-h-screen bg-white">
       <Header />
       
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-slate-800 mb-4">
-            Track Your <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Order</span>
-          </h1>
-          <p className="text-xl text-slate-600 max-w-2xl mx-auto">
-            Enter your email and order number to view your order details and tracking information
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="mb-8">
+          <p className="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-amber-200/70 text-amber-900 mb-3">
+            Anagioprim Healthy Coffee
+          </p>
+          <h1 className="text-3xl font-bold text-slate-900">Track Your Orders</h1>
+          <p className="text-slate-600 mt-2">
+            Enter your email address and order ID to view your coffee order and tracking information.
           </p>
         </div>
 
-        {/* Search Form */}
-        <div className="bg-white rounded-3xl shadow-xl border border-slate-100 p-8 mb-8">
-          <form onSubmit={handleSearch} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label htmlFor="email" className="block text-sm font-semibold text-slate-700 mb-2">
-                  Email Address
-                </label>
-                <input
-                  type="email"
-                  id="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="your.email@example.com"
-                  className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-blue-500 focus:outline-none transition-colors text-slate-900"
-                  required
-                />
-              </div>
-              
-              <div>
-                <label htmlFor="orderNumber" className="block text-sm font-semibold text-slate-700 mb-2">
-                  Order Number
-                </label>
-                <input
-                  type="text"
-                  id="orderNumber"
-                  value={orderNumber}
-                  onChange={(e) => setOrderNumber(e.target.value)}
-                  placeholder="cs_test_..."
-                  className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-blue-500 focus:outline-none transition-colors text-slate-900"
-                  required
-                />
-                <p className="text-xs text-slate-500 mt-1">
-                  Found in your order confirmation email
-                </p>
-              </div>
+        {/* Search Section */}
+        <PremiumCard className="p-6 mb-8">
+          <h2 className="text-xl font-bold text-slate-900 mb-4">Find Your Order</h2>
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-3 items-start">
+            <div className="md:col-span-2">
+              <input
+                type="email"
+                placeholder="Email address"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && searchOrders()}
+                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+              />
             </div>
-            
-            <div className="text-center">
-              <Button 
-                type="submit" 
+            <div className="md:col-span-2">
+              <input
+                type="text"
+                placeholder="Order ID (e.g., cs_test_...)"
+                value={orderId}
+                onChange={(e) => setOrderId(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && searchOrders()}
+                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+              />
+            </div>
+            <div className="md:col-span-1">
+              <PremiumButton 
+                onClick={searchOrders}
+                disabled={loading || !email.trim() || !orderId.trim()}
                 loading={loading}
-                size="lg"
-                className="px-12"
+                variant="gradient"
+                className="w-full"
               >
-                {loading ? 'Searching...' : 'Find My Order'}
-              </Button>
-            </div>
-          </form>
-        </div>
-
-        {/* Error Message */}
-        {error && (
-          <div className="bg-red-50 border-2 border-red-200 rounded-3xl p-6 mb-8">
-            <div className="flex items-center">
-              <div className="text-red-500 mr-3">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <div>
-                <h3 className="font-semibold text-red-800">Order Not Found</h3>
-                <p className="text-red-700">{error}</p>
-              </div>
+                Search
+              </PremiumButton>
             </div>
           </div>
-        )}
+        </PremiumCard>
 
-        {/* No Results Message */}
-        {searched && !order && !error && (
-          <div className="bg-yellow-50 border-2 border-yellow-200 rounded-3xl p-6 mb-8">
-            <div className="flex items-center">
-              <div className="text-yellow-500 mr-3">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <div>
-                <h3 className="font-semibold text-yellow-800">No Order Found</h3>
-                <p className="text-yellow-700">Please double-check your email address and order number.</p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Order Details */}
-        {order && (
-          <div className="bg-white rounded-3xl shadow-xl border border-slate-100 overflow-hidden">
-            <div className="bg-gradient-to-r from-green-500 to-teal-500 text-white p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-2xl font-bold">Order Found!</h2>
-                  <p className="text-green-100">Order #{maskOrderId(order.id)}</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-3xl font-bold">{formatPrice(order.amount_total)}</p>
-                  <p className="text-green-100">{formatDate(order.createdAt)}</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="p-8">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-                {/* Order Status */}
-                <div>
-                  <h3 className="font-semibold text-slate-800 mb-4">Order Status</h3>
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between p-3 bg-green-50 rounded-xl">
-                      <span className="font-medium text-green-800">Payment</span>
-                      <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-semibold">
-                        {order.payment_status === 'paid' ? 'Completed' : order.payment_status}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between p-3 bg-blue-50 rounded-xl">
-                      <span className="font-medium text-blue-800">Production</span>
-                      <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-semibold">
-                        In Progress
-                      </span>
-                    </div>
+        {/* Orders List */}
+        {orders.length > 0 && (
+          <div className="space-y-6 mb-8">
+            <h2 className="text-2xl font-bold text-slate-900">Your Orders</h2>
+            {orders.map((order) => (
+              <PremiumCard key={order.id} className="p-6">
+                <div className="flex justify-between items-start mb-4">
+                  <div>
+                    <h3 className="text-lg font-bold text-slate-900">
+                      Order #{order.id.slice(-8).toUpperCase()}
+                    </h3>
+                    <p className="text-slate-600">{formatDate(order.createdAt)}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-2xl font-bold text-slate-900">
+                      {formatPrice(order.amount_total)}
+                    </p>
+                    <span className={`inline-flex px-2 py-1 rounded-full text-xs font-semibold ${
+                      order.payment_status === 'paid' 
+                        ? 'bg-green-100 text-green-800' 
+                        : 'bg-yellow-100 text-yellow-800'
+                    }`}>
+                      {order.payment_status === 'paid' ? 'Paid' : 'Pending'}
+                    </span>
                   </div>
                 </div>
 
-                {/* Shipping Info */}
-                <div>
-                  <h3 className="font-semibold text-slate-800 mb-4">Shipping Address</h3>
-                  <div className="text-sm text-slate-600 space-y-1">
-                    <p className="font-medium text-slate-800">{order.shipping.name}</p>
-                    <p>{order.shipping.address.line1}</p>
-                    {order.shipping.address.line2 && <p>{order.shipping.address.line2}</p>}
-                    <p>{order.shipping.address.city}, {order.shipping.address.state} {order.shipping.address.postal_code}</p>
-                    <p>{order.shipping.address.country}</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Order Items */}
-              <div className="mb-8">
-                <h3 className="font-semibold text-slate-800 mb-4">Items Ordered</h3>
-                <div className="space-y-3">
+                {/* Items */}
+                <div className="mb-4">
+                  <h4 className="font-semibold text-slate-900 mb-2">Items:</h4>
                   {order.items.map((item, index) => (
-                    <div key={index} className="flex justify-between items-center p-4 bg-slate-50 rounded-xl">
-                      <div>
-                        <p className="font-medium text-slate-800">{item.name}</p>
-                        <p className="text-sm text-slate-600">Quantity: {item.quantity}</p>
-                      </div>
-                      <p className="font-semibold text-slate-800">{formatPrice(item.amount_total)}</p>
+                    <div key={index} className="flex justify-between py-1">
+                      <span className="text-slate-900">{item.name} × {item.quantity}</span>
+                      <span className="text-slate-900 font-semibold">{formatPrice(item.amount_total)}</span>
                     </div>
                   ))}
                 </div>
-              </div>
 
-              {/* Order Total */}
-              <div className="border-t border-slate-200 pt-6">
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span>Subtotal:</span>
-                    <span>{formatPrice(order.amount_total - order.shipping_cost)}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span>Shipping:</span>
-                    <span>{formatPrice(order.shipping_cost)}</span>
-                  </div>
-                  <div className="flex justify-between text-lg font-bold border-t pt-2">
-                    <span>Total:</span>
-                    <span>{formatPrice(order.amount_total)}</span>
+                {/* Shipping */}
+                <div className="mb-4">
+                  <h4 className="font-semibold text-slate-900 mb-2">Shipping to:</h4>
+                  <div className="text-sm text-slate-600">
+                    <p>{order.shipping.name}</p>
+                    <p>{order.shipping.address.line1}</p>
+                    {order.shipping.address.line2 && <p>{order.shipping.address.line2}</p>}
+                    <p>
+                      {order.shipping.address.city}, {order.shipping.address.state} {order.shipping.address.postal_code}
+                    </p>
+                    <p>{order.shipping.address.country}</p>
                   </div>
                 </div>
-              </div>
 
-              {/* Support Info */}
-              <div className="mt-8 p-6 bg-blue-50 rounded-2xl border border-blue-200">
-                <h4 className="font-semibold text-blue-900 mb-2">Need Help?</h4>
-                <p className="text-blue-800 text-sm">
-                  If you have questions about your order, please contact our support team with your order number.
-                </p>
-              </div>
-            </div>
+                {/* Tracking */}
+                {order.trackingNumber && (
+                  <div className="border-t pt-4">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <h4 className="font-semibold text-slate-900">Tracking Number:</h4>
+                        <p className="text-slate-600 font-mono">{order.trackingNumber}</p>
+                      </div>
+                      <PremiumButton
+                        variant="outline"
+                        size="sm"
+                        onClick={() => trackPackage(order.trackingNumber!)}
+                        loading={trackingLoading}
+                      >
+                        Track Package
+                      </PremiumButton>
+                    </div>
+                  </div>
+                )}
+              </PremiumCard>
+            ))}
           </div>
         )}
 
+        {/* Tracking Information */}
+        {trackingInfo && (
+          <PremiumCard className="p-6">
+            <h2 className="text-xl font-bold text-slate-900 mb-4">Package Tracking</h2>
+            <div className="mb-4">
+              <span className={`inline-flex px-3 py-1 rounded-full text-sm font-semibold ${
+                trackingInfo.status === 'delivered' ? 'bg-green-100 text-green-800' :
+                trackingInfo.status === 'in_transit' ? 'bg-blue-100 text-blue-800' :
+                'bg-yellow-100 text-yellow-800'
+              }`}>
+                {trackingInfo.status.replace('_', ' ').toUpperCase()}
+              </span>
+              {trackingInfo.delivery_date && (
+                <p className="text-slate-600 mt-2">
+                  Delivered: {new Date(trackingInfo.delivery_date).toLocaleDateString()}
+                </p>
+              )}
+            </div>
+            
+            <div>
+              <h3 className="font-semibold text-slate-900 mb-3">Tracking History:</h3>
+              <div className="space-y-3">
+                {trackingInfo.events.map((event, index) => (
+                  <div key={index} className="flex justify-between items-start border-l-2 border-slate-200 pl-4">
+                    <div>
+                      <p className="font-medium text-slate-900">{event.description}</p>
+                      <p className="text-sm text-slate-500">{event.location}</p>
+                    </div>
+                    <p className="text-sm text-slate-600">
+                      {new Date(event.date).toLocaleDateString()}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </PremiumCard>
+        )}
+
         {/* Help Section */}
-        <div className="mt-12 text-center">
-          <div className="bg-white rounded-3xl shadow-lg border border-slate-100 p-8">
-            <h3 className="text-xl font-bold text-slate-800 mb-4">Looking for Your Order Number?</h3>
-            <p className="text-slate-600 mb-6">
-              Your order number was sent to your email address immediately after purchase. 
-              Check your inbox (and spam folder) for a confirmation email from VersatilePrint.
-            </p>
-            <Link 
-              href="/shop"
-              className="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-colors"
-            >
-              Continue Shopping
-            </Link>
-          </div>
-        </div>
+        <PremiumCard className="p-6 mt-8">
+          <h2 className="text-lg font-bold text-slate-900 mb-3">Need Help?</h2>
+          <p className="text-slate-600 mb-4">
+            If you can't find your order or have questions about your coffee delivery, we're here to help.
+          </p>
+          <Link href="/contact">
+            <PremiumButton variant="outline">
+              Contact Support
+            </PremiumButton>
+          </Link>
+        </PremiumCard>
       </main>
     </div>
   );

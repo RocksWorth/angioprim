@@ -1,30 +1,6 @@
 import nodemailer from 'nodemailer';
 import { generateCustomerConfirmationEmail, generateAdminNotificationEmail } from './email-templates';
-
-interface OrderData {
-  id: string;
-  email: string;
-  phone?: string;
-  shipping: {
-    name: string;
-    address: {
-      line1: string;
-      line2?: string;
-      city: string;
-      state: string;
-      postal_code: string;
-      country: string;
-    };
-  };
-  items: Array<{
-    name: string;
-    quantity: number;
-    amount_total: number;
-  }>;
-  amount_total: number;
-  shipping_cost: number;
-  createdAt: Date;
-}
+import type { OrderData } from './email-templates';
 
 interface EmailResult {
   success: boolean;
@@ -93,9 +69,9 @@ class GmailEmailService {
       const emailHtml = generateCustomerConfirmationEmail(orderData);
 
       const mailOptions = {
-        from: `"VersatilePrint Orders" <${process.env.GMAIL_USER}>`,
+        from: `"AngioPrim Orders" <${process.env.GMAIL_USER}>`,
         to: orderData.email,
-        subject: `Order Confirmation #${orderNumber} - VersatilePrint`,
+        subject: `Order Confirmation #${orderNumber} - AngioPrim`,
         html: emailHtml,
       };
 
@@ -128,9 +104,9 @@ class GmailEmailService {
 
       const adminEmail = process.env.ADMIN_EMAIL || process.env.GMAIL_USER;
       const mailOptions = {
-        from: `"VersatilePrint System" <${process.env.GMAIL_USER}>`,
+        from: `"AngioPrim System" <${process.env.GMAIL_USER}>`,
         to: adminEmail,
-        subject: `🎉 New Order #${orderNumber} - $${totalFormatted} - VersatilePrint`,
+        subject: `🎉 New Order #${orderNumber} - $${totalFormatted} - AngioPrim`,
         html: emailHtml,
       };
 

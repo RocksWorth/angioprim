@@ -1,6 +1,38 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { stripe } from '../../../../lib/stripe';
 
+// Types for request payloads
+type CartItem = {
+  id: string;
+  productId: string;
+  name: string;
+  description: string;
+  price: number; // cents
+  quantity: number;
+  image: string; // path or absolute URL
+  options: unknown;
+};
+
+type ShippingAddress = {
+  name: string;
+  address1: string;
+  address2?: string;
+  city: string;
+  province: string;
+  postalCode: string;
+  country: string;
+  phone?: string;
+};
+
+type ShippingRate = {
+  id: string;
+  name: string;
+  description: string;
+  price: number; // cents
+  estimatedDays: string; // e.g. "2-5"
+  carrier: string;
+};
+
 // Simple validation functions
 function validateCartItems(items: any) {
   if (!Array.isArray(items) || items.length === 0) return false;
@@ -34,7 +66,11 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { items, shippingAddress, shippingRate } = body;
+    const { items, shippingAddress, shippingRate } = body as {
+      items: CartItem[];
+      shippingAddress: ShippingAddress;
+      shippingRate: ShippingRate;
+    };
     
     // Validate request data
     if (!validateCartItems(items)) {
@@ -67,7 +103,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create line items for Stripe
-    const lineItems = items.map(item => ({
+    const lineItems = items.map((item: CartItem) => ({
       price_data: {
         currency: 'cad',
         product_data: {
@@ -91,6 +127,8 @@ export async function POST(request: NextRequest) {
         product_data: {
           name: `Shipping - ${shippingRate.name}`,
           description: `${shippingRate.description} via ${shippingRate.carrier}`,
+          images: [],
+          metadata: { productId: 'shipping', options: '{}' },
         },
         unit_amount: shippingRate.price,
       },
@@ -98,7 +136,7 @@ export async function POST(request: NextRequest) {
     });
 
     // Calculate tax (simplified - in real app, use proper tax service)
-    const subtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const subtotal = items.reduce((sum: number, item: CartItem) => sum + (item.price * item.quantity), 0);
     const taxRate = shippingAddress.province === 'ON' ? 0.13 : 0.05; // HST vs GST
     const taxAmount = Math.round(subtotal * taxRate);
 
@@ -110,6 +148,8 @@ export async function POST(request: NextRequest) {
           product_data: {
             name: 'Tax',
             description: `${shippingAddress.province === 'ON' ? 'HST' : 'GST'} (${(taxRate * 100).toFixed(0)}%)`,
+            images: [],
+            metadata: { productId: 'tax', options: '{}' },
           },
           unit_amount: taxAmount,
         },
@@ -117,13 +157,16 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    // Determine origin for redirects (env override, else request origin)
+    const origin = (process.env.NEXT_PUBLIC_APP_URL || process.env.SITE_URL || '').trim() || new URL(request.url).origin;
+
     // Create Stripe checkout session
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: lineItems,
       mode: 'payment',
-      success_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/cart`,
+      success_url: `${origin}/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${origin}/cart`,
       
       // Customer and shipping information
       customer_creation: 'always',
@@ -159,7 +202,7 @@ export async function POST(request: NextRequest) {
       
       // Metadata for the webhook
       metadata: {
-        cartItems: JSON.stringify(items.map(item => ({
+        cartItems: JSON.stringify(items.map((item: CartItem) => ({
           id: item.id,
           productId: item.productId,
           name: item.name,

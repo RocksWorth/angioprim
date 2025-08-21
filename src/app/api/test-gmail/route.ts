@@ -21,7 +21,7 @@ export async function GET() {
         },
       },
       items: [{
-        name: 'Test Business Cards — 250 cards (Double-sided)',
+        name: 'Omega3 Coffee — Premium Blend (250g)',
         quantity: 1,
         amount_total: 3999,
       }],

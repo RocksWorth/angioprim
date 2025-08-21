@@ -1,4 +1,4 @@
-// Professional email templates for VersatilePrint
+// Professional email templates for AngioPrim
 
 export interface OrderData {
   id: string;
@@ -27,21 +27,21 @@ export interface OrderData {
 }
 
 const BRAND_COLORS = {
-  primary: '#3B82F6', // Blue
-  secondary: '#8B5CF6', // Purple
-  accent: '#06B6D4', // Cyan
-  text: '#1E293B', // Slate
-  textLight: '#64748B', // Slate light
-  background: '#F8FAFC', // Slate 50
+  primary: '#8B4513', // Saddle Brown (Rich coffee brown)
+  secondary: '#D2691E', // Chocolate (Warm coffee accent)
+  accent: '#CD853F', // Peru (Light coffee cream)
+  text: '#3E2723', // Dark Brown (Coffee bean dark)
+  textLight: '#795548', // Brown (Medium coffee)
+  background: '#FFF8E1', // Amber 50 (Cream/latte background)
   white: '#FFFFFF'
 };
 
 const COMPANY_INFO = {
-  name: 'VersatilePrint',
-  website: 'https://versatileprint.com',
-  email: 'orders@versatileprint.com',
+  name: 'AngioPrim',
+  website: 'https://angioprim.com',
+  email: 'orders@angioprim.com',
   phone: '+1 (555) 123-4567',
-  address: '123 Print Street, Toronto, ON M5V 3A8, Canada'
+  address: '123 Coffee Street, Toronto, ON M5V 3A8, Canada'
 };
 
 // Shared email styles
@@ -197,15 +197,28 @@ const emailStyles = `
     .button {
       display: inline-block;
       background: linear-gradient(135deg, ${BRAND_COLORS.primary} 0%, ${BRAND_COLORS.secondary} 100%);
-      color: ${BRAND_COLORS.white};
-      padding: 16px 32px;
-      border-radius: 8px;
-      text-decoration: none;
-      font-weight: 600;
-      font-size: 16px;
+      color: ${BRAND_COLORS.white} !important;
+      padding: 20px 40px;
+      border-radius: 12px;
+      text-decoration: none !important;
+      font-weight: 700;
+      font-size: 18px;
       text-align: center;
-      margin: 24px auto;
-      box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.25);
+      margin: 32px auto;
+      display: block;
+      width: fit-content;
+      box-shadow: 0 8px 25px 0 rgba(139, 69, 19, 0.35);
+      border: 3px solid ${BRAND_COLORS.white};
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      min-width: 250px;
+    }
+    
+    .button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 35px 0 rgba(139, 69, 19, 0.45);
+      text-decoration: none !important;
+      color: ${BRAND_COLORS.white} !important;
     }
     
     .footer {
@@ -288,15 +301,15 @@ export function generateCustomerConfirmationEmail(orderData: OrderData): string 
         <!-- Header -->
         <div class="header">
           <h1 class="logo">${COMPANY_INFO.name}</h1>
-          <p class="tagline">Premium printing solutions delivered with excellence</p>
+          <p class="tagline">Premium coffee blends crafted for optimal wellness</p>
         </div>
 
         <!-- Content -->
         <div class="content">
           <h1 class="title">Thank You for Your Order!</h1>
           <p class="subtitle">
-            We've received your order and payment successfully. Your premium print materials 
-            are now in production and will be shipped to you soon.
+            We've received your order and payment successfully. Your premium coffee blend 
+            is being prepared and will be shipped to you soon.
           </p>
 
           <!-- Order Summary -->
@@ -356,7 +369,7 @@ export function generateCustomerConfirmationEmail(orderData: OrderData): string 
           <div style="text-align: center; margin: 32px 0;">
             <h3 style="color: ${BRAND_COLORS.text}; margin-bottom: 16px;">What's Next?</h3>
             <p style="color: ${BRAND_COLORS.textLight}; margin-bottom: 24px; line-height: 1.6;">
-              Your order is now in production. We'll send you tracking information once your items ship. 
+              Your coffee order is being prepared with care. We'll send you tracking information once your premium coffee ships. 
               You can also track your order status anytime using the link below.
             </p>
             <a href="${trackingUrl}" class="button">Track Your Order</a>
@@ -377,7 +390,7 @@ export function generateCustomerConfirmationEmail(orderData: OrderData): string 
         <div class="footer">
           <div style="margin-bottom: 16px;">
             <h3 style="color: ${BRAND_COLORS.text}; margin: 0 0 8px 0;">${COMPANY_INFO.name}</h3>
-            <p class="footer-text">Where luxury printing meets exceptional service</p>
+            <p class="footer-text">Where premium coffee meets exceptional wellness</p>
           </div>
           
           <div class="contact-info">
@@ -437,8 +450,8 @@ export function generateAdminNotificationEmail(orderData: OrderData): string {
         <div class="content">
           <h1 class="title">🎉 New Order Received!</h1>
           <p class="subtitle">
-            A new order has been placed and payment has been confirmed. 
-            Here are the production details for fulfillment.
+            A new coffee order has been placed and payment has been confirmed. 
+            Here are the order details for preparation and fulfillment.
           </p>
 
           <!-- Order Summary -->
@@ -518,7 +531,8 @@ export function generateAdminNotificationEmail(orderData: OrderData): string {
           <div style="background: #ECFDF5; border: 1px solid #10B981; border-radius: 8px; padding: 20px; margin: 24px 0;">
             <h4 style="color: #065F46; margin: 0 0 12px 0; font-size: 16px;">📋 Next Steps</h4>
             <ul style="color: #047857; margin: 0; padding-left: 20px; line-height: 1.8;">
-              <li>Begin production of ordered items</li>
+              <li>Prepare and package premium coffee order</li>
+              <li>Quality check coffee freshness and packaging</li>
               <li>Prepare shipping materials and labels</li>
               <li>Update order status when shipped</li>
               <li>Send tracking information to customer</li>

@@ -5,6 +5,7 @@ import { PremiumButton } from '@/components/ui/premium-button';
 import { getBrandConfig } from '@/lib/design-system';
 import Link from 'next/link';
 import { ReactNode } from 'react';
+import Image from 'next/image';
 
 interface HeroAction {
   label: string;
@@ -22,6 +23,7 @@ interface PremiumHeroProps {
   backgroundVariant?: 'gradient' | 'solid' | 'pattern' | 'minimal';
   floatingElements?: boolean;
   className?: string;
+  image?: { src: string; alt?: string };
 }
 
 export function PremiumHero({
@@ -33,6 +35,7 @@ export function PremiumHero({
   backgroundVariant = 'gradient',
   floatingElements = true,
   className,
+  image,
 }: PremiumHeroProps) {
   const brandConfig = getBrandConfig();
 
@@ -51,46 +54,41 @@ export function PremiumHero({
       {/* Floating Elements */}
       {floatingElements && (
         <>
-          <div className="absolute top-20 left-10 w-20 h-20 bg-gradient-to-br from-blue-200 to-purple-200 rounded-full opacity-60 animate-pulse" />
-          <div className="absolute bottom-20 right-10 w-32 h-32 bg-gradient-to-br from-purple-200 to-blue-200 rounded-full opacity-40 animate-pulse delay-1000" />
-          <div className="absolute top-1/2 left-1/4 w-16 h-16 bg-gradient-to-br from-blue-300 to-purple-300 rounded-full opacity-30 animate-pulse delay-500" />
-          <div className="absolute bottom-1/3 right-1/4 w-24 h-24 bg-gradient-to-br from-purple-300 to-blue-300 rounded-full opacity-20 animate-pulse delay-700" />
+          <div className="absolute top-20 left-10 w-20 h-20 bg-gradient-to-br from-amber-200 to-orange-200 rounded-full opacity-60 animate-pulse" />
+          <div className="absolute bottom-20 right-10 w-32 h-32 bg-gradient-to-br from-orange-200 to-amber-200 rounded-full opacity-40 animate-pulse delay-1000" />
+          <div className="absolute top-1/2 left-1/4 w-16 h-16 bg-gradient-to-br from-amber-300 to-orange-300 rounded-full opacity-30 animate-pulse delay-500" />
+          <div className="absolute bottom-1/3 right-1/4 w-24 h-24 bg-gradient-to-br from-orange-300 to-amber-300 rounded-full opacity-20 animate-pulse delay-700" />
         </>
       )}
       
       {/* Content */}
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-32">
-        <div className="text-center">
+        <div className={cn(image ? 'grid grid-cols-1 lg:grid-cols-2 items-center gap-12' : 'text-center')}>
           {badge && (
-            <div className="inline-flex items-center px-6 py-3 bg-white/90 backdrop-blur-sm shadow-lg border border-blue-100 text-blue-800 rounded-full text-sm font-semibold mb-8 hover:shadow-xl transition-shadow duration-300">
+            <div className={cn(
+              'inline-flex items-center px-6 py-3 bg-white/90 backdrop-blur-sm shadow-lg rounded-full text-sm font-semibold mb-8 hover:shadow-xl transition-shadow duration-300 border',
+              image ? 'justify-self-start border-amber-100 text-amber-800' : 'border-amber-100 text-amber-800'
+            )}>
               ✨ {badge}
             </div>
           )}
           
-          <div className="space-y-8">
+          <div className={cn('space-y-8', image && 'order-1 lg:order-none')}> 
             {subtitle && (
               <p className="text-xl md:text-2xl text-slate-600 font-light tracking-wide">
                 {subtitle}
               </p>
             )}
             
-            <h1 className="text-5xl md:text-7xl font-light tracking-tight mb-8">
-              <span className="font-extralight text-slate-700 block">
-                {title.split(' ').slice(0, -1).join(' ')}
-              </span>
-              <span className={cn(
-                'font-bold bg-gradient-to-r bg-clip-text text-transparent',
-                brandConfig.gradients.primary
-              )}>
-                {title.split(' ').slice(-1)[0]}
-              </span>
+            <h1 className={cn('text-5xl md:text-7xl font-light tracking-tight mb-8', image && 'text-left')}>
+              <span className="font-extralight text-slate-700 block">{title}</span>
             </h1>
             
-            <p className="text-xl md:text-2xl text-slate-600 font-light max-w-4xl mx-auto leading-relaxed">
+            <p className={cn('text-xl md:text-2xl text-slate-600 font-light max-w-4xl leading-relaxed', image ? 'mx-0 text-left' : 'mx-auto')}>
               {description}
             </p>
             
-            <div className="flex flex-col sm:flex-row gap-6 justify-center pt-8">
+            <div className={cn('flex flex-col sm:flex-row gap-6 pt-8', image ? 'justify-start' : 'justify-center')}>
               {actions.map((action, index) => (
                 <Link key={index} href={action.href}>
                   <PremiumButton
@@ -106,6 +104,13 @@ export function PremiumHero({
               ))}
             </div>
           </div>
+
+          {image && (
+            <div className="relative w-full aspect-[4/3] lg:aspect-square rounded-3xl overflow-hidden ring-1 ring-amber-100 shadow-2xl order-2 lg:order-none">
+              <Image src={image.src} alt={image.alt || 'Coffee'} fill className="object-cover" />
+              <div className="absolute inset-0 bg-gradient-to-tr from-amber-900/10 via-transparent to-white/0" />
+            </div>
+          )}
         </div>
       </div>
       

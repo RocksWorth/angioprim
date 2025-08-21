@@ -18,12 +18,12 @@ function validateCartItems(items: any) {
 // Canada Post API integration for real shipping rates
 async function getCanadaPostRates(address: any, items: any[]) {
   // Calculate package weight and dimensions
-  const packageWeight = items.reduce((total, item) => {
+  const packageWeight = items.reduce((total: number, item: any) => {
     const baseWeight = getProductWeight(item.productId, item.options);
     return total + (baseWeight * item.quantity);
   }, 0);
 
-  const packageValue = items.reduce((total, item) => {
+  const packageValue = items.reduce((total: number, item: any) => {
     return total + (item.price * item.quantity);
   }, 0);
 
@@ -233,28 +233,14 @@ function getEstimatedDays(serviceCode: string): string {
 function getProductWeight(productId: string, options: any): number {
   // Weight in kg based on product type and options
   const weights: Record<string, number> = {
-    'business-cards': 0.1,
-    'flyers': 0.05,
-    'postcards': 0.03,
-    'stickers': 0.02,
-    'posters': 0.3,
-    'brochures': 0.15,
+    'omega3-coffee': 0.3, // 300g per bag
+    'chelation-coffee': 0.3,
   };
   
   const baseWeight = weights[productId] || 0.1;
   
   // Adjust for paper type/thickness
-  if (options.paperType) {
-    switch (options.paperType) {
-      case '18pt-writable':
-      case '14pt-matte':
-        return baseWeight * 1.5;
-      case '100lb-gloss':
-        return baseWeight * 1.3;
-      default:
-        return baseWeight;
-    }
-  }
+  // Coffee has fixed weight per bag; multiply handled by quantity outside
   
   return baseWeight;
 }
@@ -319,10 +305,10 @@ export async function POST(request: NextRequest) {
       rates,
       address,
       packageInfo: {
-        weight: items.reduce((total, item) => {
+        weight: items.reduce((total: number, item: any) => {
           return total + (getProductWeight(item.productId, item.options) * item.quantity);
         }, 0),
-        value: items.reduce((total, item) => {
+        value: items.reduce((total: number, item: any) => {
           return total + (item.price * item.quantity);
         }, 0),
       },
@@ -330,13 +316,6 @@ export async function POST(request: NextRequest) {
     
   } catch (error) {
     console.error('Shipping rates calculation error:', error);
-    
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Invalid request data', details: error.errors },
-        { status: 400 }
-      );
-    }
     
     return NextResponse.json(
       { error: 'Failed to calculate shipping rates' },

@@ -10,12 +10,9 @@ export function Header() {
 
   const navigation = [
     { name: 'Home', href: '/' },
-    { name: 'Shop', href: '/shop' },
-    { name: 'Business Cards', href: '/shop/business-cards' },
-    { name: 'Flyers', href: '/shop/flyers' },
-    { name: 'Postcards', href: '/shop/postcards' },
-    { name: 'Stickers', href: '/shop/stickers' },
-    { name: 'Track Order', href: '/my-orders' },
+    { name: 'Shop Coffee', href: '/shop/coffee' },
+    { name: 'Contact', href: '/contact' },
+    { name: 'Cart', href: '/cart' },
   ];
 
   return (
@@ -24,8 +21,8 @@ export function Header() {
         <div className="flex justify-between items-center h-20">
           {/* Logo */}
           <div className="flex-shrink-0">
-            <Link href="/" className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent hover:from-blue-700 hover:to-purple-700 transition-all duration-300">
-              VersatilePrint
+            <Link href="/" className="text-3xl font-bold bg-gradient-to-r from-amber-700 to-rose-600 bg-clip-text text-transparent hover:from-amber-800 hover:to-rose-700 transition-all duration-300">
+              Anagioprim Healthy Coffee
             </Link>
           </div>
 
@@ -46,8 +43,8 @@ export function Header() {
           {/* Desktop CTA & Cart */}
           <div className="hidden lg:flex items-center space-x-4">
             <CartIcon />
-            <Button size="sm" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300 px-6 py-2.5 font-semibold">
-              <Link href="/shop">Get Quote</Link>
+            <Button size="sm" className="bg-gradient-to-r from-amber-700 to-rose-600 hover:from-amber-800 hover:to-rose-700 text-white shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300 px-6 py-2.5 font-semibold">
+              <Link href="/shop/coffee">Shop Coffee</Link>
             </Button>
           </div>
 
@@ -84,8 +81,8 @@ export function Header() {
                 </Link>
               ))}
               <div className="pt-4 px-4">
-                <Button size="sm" className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg font-semibold py-3">
-                  <Link href="/shop" onClick={() => setMobileMenuOpen(false)}>Get Quote</Link>
+                <Button size="sm" className="w-full bg-gradient-to-r from-amber-700 to-rose-600 hover:from-amber-800 hover:to-rose-700 text-white shadow-lg font-semibold py-3">
+                  <Link href="/shop/coffee" onClick={() => setMobileMenuOpen(false)}>Shop Coffee</Link>
                 </Button>
               </div>
             </div>

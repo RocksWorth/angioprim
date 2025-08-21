@@ -17,6 +17,41 @@ export function CartDrawer() {
     return `$${(price / 100).toFixed(2)}`;
   };
 
+  const prettifyKey = (key: string) => {
+    const map: Record<string, string> = {
+      coffeeType: 'Coffee',
+      size: 'Size',
+      blend: 'Blend',
+      bags: 'Bags',
+      pack: 'Pack',
+      sides: 'Sides',
+      paperType: 'Paper',
+    };
+    return map[key] || key.charAt(0).toUpperCase() + key.slice(1);
+  };
+
+  const prettifyValue = (key: string, value: any) => {
+    const v = String(value);
+    if (key === 'coffeeType') {
+      const id = v.toLowerCase();
+      if (id.includes('omega3')) return 'Omega3 Coffee';
+      if (id.includes('chelation')) return 'Chelation Coffee';
+      return v;
+    }
+    if (key === 'blend') {
+      return v.charAt(0).toUpperCase() + v.slice(1);
+    }
+    if (key === 'bags') {
+      const n = parseInt(v, 10);
+      if (!isNaN(n)) return `${n} ${n === 1 ? 'Bag' : 'Bags'}`;
+      return v;
+    }
+    if (key === 'sides') {
+      return v === 'double' ? 'Double' : 'Single';
+    }
+    return v;
+  };
+
   return (
     <>
       {/* Backdrop */}
@@ -77,25 +112,28 @@ export function CartDrawer() {
                     
                     <div className="flex-1 min-w-0">
                       <h3 className="font-semibold text-slate-900 truncate">{item.name}</h3>
-                      <p className="text-sm text-slate-500 mt-1">{item.description}</p>
+                      <p className="text-sm text-slate-600 mt-1">
+                        {item.description}
+                      </p>
                       
                       {/* Options */}
                       {Object.keys(item.options).length > 0 && (
-                        <div className="mt-2 space-y-1">
+                        <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1">
                           {Object.entries(item.options).map(([key, value]) => (
-                            <p key={key} className="text-xs text-slate-400">
-                              {key}: {value}
-                            </p>
+                            <div key={key} className="text-xs text-slate-500">
+                              <span className="font-medium text-slate-700">{prettifyKey(key)}:</span>{' '}
+                              <span>{prettifyValue(key, value)}</span>
+                            </div>
                           ))}
                         </div>
                       )}
                       
                       {/* Quantity Controls */}
-                      <div className="flex items-center justify-between mt-3">
+                      <div className="flex items-center justify-between mt-4">
                         <div className="flex items-center gap-3">
                           <button
                             onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                            className="w-9 h-9 rounded-full bg-white border-2 border-slate-300 flex items-center justify-center hover:bg-slate-50 hover:border-slate-400 active:scale-95 transition-all duration-150"
+                            className="w-9 h-9 rounded-full bg-white border-2 border-slate-300 flex items-center justify-center hover:bg-slate-50 hover:border-slate-400 active:scale-95 transition-all duration-150 shadow-sm"
                             disabled={item.quantity <= 1}
                           >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -105,7 +143,7 @@ export function CartDrawer() {
                           <span className="w-10 text-center font-semibold text-lg">{item.quantity}</span>
                           <button
                             onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                            className="w-9 h-9 rounded-full bg-white border-2 border-slate-300 flex items-center justify-center hover:bg-slate-50 hover:border-slate-400 active:scale-95 transition-all duration-150"
+                            className="w-9 h-9 rounded-full bg-white border-2 border-slate-300 flex items-center justify-center hover:bg-slate-50 hover:border-slate-400 active:scale-95 transition-all duration-150 shadow-sm"
                           >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -119,7 +157,7 @@ export function CartDrawer() {
                           </p>
                           <button
                             onClick={() => removeItem(item.id)}
-                            className="text-xs text-red-500 hover:text-red-700 transition-colors"
+                            className="text-xs text-red-500 hover:text-red-700 transition-colors underline-offset-2 hover:underline"
                           >
                             Remove
                           </button>

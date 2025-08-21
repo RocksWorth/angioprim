@@ -26,14 +26,89 @@ export default function CartPage() {
     phone: '',
   });
 
+  // Professional form UX: validation and formatting helpers
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+  const canadianPostalRegex = /^[A-Za-z]\d[A-Za-z][ -]?\d[A-Za-z]\d$/;
+
+  const validateField = (field: string, value: string) => {
+    let error = '';
+    if (['name', 'address1', 'city', 'province', 'postalCode'].includes(field)) {
+      if (!value || String(value).trim().length === 0) {
+        error = 'This field is required';
+      }
+    }
+    if (!error && field === 'postalCode') {
+      if (!canadianPostalRegex.test(value.trim())) {
+        error = 'Enter a valid Canadian postal code (e.g., A1A 1A1)';
+      }
+    }
+    setFormErrors(prev => ({ ...prev, [field]: error }));
+    return error;
+  };
+
+  const validateForm = () => {
+    const fields = ['name', 'address1', 'city', 'province', 'postalCode'];
+    const errors: Record<string, string> = {};
+    fields.forEach(f => {
+      const v = (shippingFormData as any)[f] as string;
+      const err = f === 'postalCode' ? (!canadianPostalRegex.test(v.trim()) ? 'Enter a valid Canadian postal code (e.g., A1A 1A1)' : '') : (!v || v.trim().length === 0 ? 'This field is required' : '');
+      if (err) errors[f] = err;
+    });
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const formatCanadianPostal = (raw: string) => {
+    const cleaned = raw.toUpperCase().replace(/[^A-Z0-9]/g, '');
+    if (cleaned.length <= 3) return cleaned;
+    return `${cleaned.slice(0, 3)} ${cleaned.slice(3, 6)}`.trim();
+  };
+
   const formatPrice = (price: number) => {
     return `$${(price / 100).toFixed(2)}`;
   };
 
+  const prettifyKey = (key: string) => {
+    const map: Record<string, string> = {
+      coffeeType: 'Coffee',
+      size: 'Size',
+      blend: 'Blend',
+      bags: 'Bags',
+      pack: 'Pack',
+      sides: 'Sides',
+      paperType: 'Paper',
+    };
+    return map[key] || key.charAt(0).toUpperCase() + key.slice(1);
+  };
+
+  const prettifyValue = (key: string, value: any) => {
+    const v = String(value);
+    if (key === 'coffeeType') {
+      const id = v.toLowerCase();
+      if (id.includes('omega3')) return 'Omega3 Coffee';
+      if (id.includes('chelation')) return 'Chelation Coffee';
+      return v;
+    }
+    if (key === 'blend') {
+      return v.charAt(0).toUpperCase() + v.slice(1);
+    }
+    if (key === 'bags') {
+      const n = parseInt(v, 10);
+      if (!isNaN(n)) return `${n} ${n === 1 ? 'Bag' : 'Bags'}`;
+      return v;
+    }
+    if (key === 'sides') {
+      return v === 'double' ? 'Double' : 'Single';
+    }
+    return v;
+  };
+
   const handleShippingSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setShippingAddress(shippingFormData);
-    await getShippingRates(shippingFormData);
+    if (!validateForm()) return;
+    const normalized = { ...shippingFormData, postalCode: formatCanadianPostal(shippingFormData.postalCode) };
+    setShippingAddress(normalized);
+    await getShippingRates(normalized);
     setShowShippingForm(false);
   };
 
@@ -132,11 +207,12 @@ export default function CartPage() {
                       
                       {/* Options */}
                       {Object.keys(item.options).length > 0 && (
-                        <div className="mt-3 space-y-1">
+                        <div className="mt-3 grid grid-cols-2 gap-x-6 gap-y-1">
                           {Object.entries(item.options).map(([key, value]) => (
-                            <p key={key} className="text-sm text-slate-500">
-                              <span className="capitalize">{key}:</span> {value}
-                            </p>
+                            <div key={key} className="text-sm text-slate-600">
+                              <span className="font-medium text-slate-800">{prettifyKey(key)}:</span>{' '}
+                              <span>{prettifyValue(key, value)}</span>
+                            </div>
                           ))}
                         </div>
                       )}
@@ -189,26 +265,26 @@ export default function CartPage() {
                 
                 <div className="space-y-3">
                   <div className="flex justify-between">
-                    <span className="text-slate-600">Subtotal ({items.reduce((sum, item) => sum + item.quantity, 0)} items)</span>
-                    <span className="font-semibold">{formatPrice(subtotal)}</span>
+                    <span className="text-slate-700">Subtotal ({items.reduce((sum, item) => sum + item.quantity, 0)} items)</span>
+                    <span className="font-semibold text-slate-900">{formatPrice(subtotal)}</span>
                   </div>
                   
                   <div className="flex justify-between">
-                    <span className="text-slate-600">Tax</span>
-                    <span className="font-semibold">{formatPrice(tax)}</span>
+                    <span className="text-slate-700">Tax</span>
+                    <span className="font-semibold text-slate-900">{formatPrice(tax)}</span>
                   </div>
                   
                   {selectedShippingRate && (
                     <div className="flex justify-between">
-                      <span className="text-slate-600">Shipping ({selectedShippingRate.name})</span>
-                      <span className="font-semibold">{formatPrice(selectedShippingRate.price)}</span>
+                      <span className="text-slate-700">Shipping ({selectedShippingRate.name})</span>
+                      <span className="font-semibold text-slate-900">{formatPrice(selectedShippingRate.price)}</span>
                     </div>
                   )}
                   
                   <div className="border-t border-slate-200 pt-3">
-                    <div className="flex justify-between text-lg font-bold">
-                      <span>Total</span>
-                      <span>{formatPrice(total)}</span>
+                    <div className="flex justify-between items-baseline">
+                      <span className="text-lg font-bold text-slate-900">Total</span>
+                      <span className="text-2xl font-extrabold text-slate-900">{formatPrice(total)}</span>
                     </div>
                   </div>
                 </div>
@@ -220,7 +296,7 @@ export default function CartPage() {
                 
                 {!shippingAddress ? (
                   <div>
-                    <p className="text-slate-600 text-sm mb-4">
+                    <p className="text-slate-900 text-sm mb-4">
                       Enter your shipping address to see available shipping options
                     </p>
                     <PremiumButton
@@ -233,13 +309,13 @@ export default function CartPage() {
                   </div>
                 ) : (
                   <div>
-                    <div className="bg-slate-50 p-4 rounded-lg mb-4">
-                      <p className="font-semibold">{shippingAddress.name}</p>
-                      <p className="text-sm text-slate-600">
+                    <div className="bg-white border border-slate-200 p-4 rounded-lg mb-4">
+                      <p className="font-semibold text-slate-900">{shippingAddress.name}</p>
+                      <p className="text-sm text-slate-900">
                         {shippingAddress.address1}
                         {shippingAddress.address2 && `, ${shippingAddress.address2}`}
                       </p>
-                      <p className="text-sm text-slate-600">
+                      <p className="text-sm text-slate-900">
                         {shippingAddress.city}, {shippingAddress.province} {shippingAddress.postalCode}
                       </p>
                     </div>
@@ -256,29 +332,43 @@ export default function CartPage() {
                     {/* Shipping Options */}
                     {shippingRates.length > 0 && (
                       <div className="space-y-3">
-                        <h4 className="font-semibold">Shipping Options</h4>
-                        {shippingRates.map((rate) => (
-                          <label key={rate.id} className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-slate-50">
-                            <input
-                              type="radio"
-                              name="shipping"
-                              value={rate.id}
-                              checked={selectedShippingRate?.id === rate.id}
-                              onChange={() => selectShippingRate(rate)}
-                              className="text-blue-600"
-                            />
-                            <div className="flex-1">
-                              <div className="flex justify-between items-start">
-                                <div>
-                                  <p className="font-medium">{rate.name}</p>
-                                  <p className="text-sm text-slate-600">{rate.description}</p>
-                                  <p className="text-xs text-slate-500">{rate.carrier}</p>
+                        <h4 className="font-semibold mb-1">Shipping Options</h4>
+                        {shippingRates.map((rate) => {
+                          const selected = selectedShippingRate?.id === rate.id;
+                          return (
+                            <label
+                              key={rate.id}
+                              className={cn(
+                                "flex items-center gap-4 p-4 rounded-xl border cursor-pointer transition-all",
+                                selected ? 'border-blue-500 ring-2 ring-blue-200 bg-blue-50/40' : 'border-slate-200 hover:bg-slate-50'
+                              )}
+                            >
+                              <input
+                                type="radio"
+                                name="shipping"
+                                value={rate.id}
+                                checked={selected}
+                                onChange={() => selectShippingRate(rate)}
+                                className="text-blue-600 h-5 w-5"
+                              />
+                              <div className="flex-1">
+                                <div className="flex justify-between items-start">
+                                  <div>
+                                    <p className="font-semibold text-slate-900">{rate.name}</p>
+                                    <p className="text-sm text-slate-600">{rate.description}</p>
+                                    <p className="text-xs text-slate-500">{rate.carrier}</p>
+                                  </div>
+                                  <div className="text-right">
+                                    <span className="font-bold text-slate-900">{formatPrice(rate.price)}</span>
+                                    {rate.estimatedDays && (
+                                      <p className="text-xs text-slate-500">ETA: {rate.estimatedDays}</p>
+                                    )}
+                                  </div>
                                 </div>
-                                <span className="font-semibold">{formatPrice(rate.price)}</span>
                               </div>
-                            </div>
-                          </label>
-                        ))}
+                            </label>
+                          );
+                        })}
                       </div>
                     )}
                   </div>
@@ -301,8 +391,28 @@ export default function CartPage() {
 
         {/* Shipping Form Modal */}
         {showShippingForm && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-xl max-w-lg w-full max-h-[80vh] overflow-y-auto">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            {/* Backdrop with blur */}
+            <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setShowShippingForm(false)} />
+            {/* Modal */}
+            <div className="relative bg-white rounded-2xl shadow-2xl ring-1 ring-slate-200/70 max-w-2xl w-full max-h-[85vh] overflow-y-auto">
+              {/* Header */}
+              <div className="px-6 py-5 border-b border-slate-200 flex items-center justify-between sticky top-0 bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/75">
+                <div>
+                  <h3 className="text-xl font-bold text-slate-900">Shipping Address</h3>
+                  <p className="text-sm text-slate-700">We use this to calculate accurate, real-time shipping rates</p>
+                </div>
+                <button
+                  onClick={() => setShowShippingForm(false)}
+                  className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+                  aria-label="Close"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
               <div className="p-6">
                 <div className="flex justify-between items-center mb-6">
                   <h3 className="text-xl font-bold">Shipping Address</h3>
@@ -318,18 +428,23 @@ export default function CartPage() {
 
                 <form onSubmit={handleShippingSubmit} className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">Full Name *</label>
+                    <label className="block text-sm font-medium text-slate-900 mb-2">Full Name *</label>
                     <input
                       type="text"
                       required
                       value={shippingFormData.name}
                       onChange={(e) => setShippingFormData(prev => ({ ...prev, name: e.target.value }))}
-                      className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      onBlur={(e) => validateField('name', e.target.value)}
+                      className={cn(
+                        "w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500",
+                        formErrors.name ? 'border-red-300' : 'border-slate-300'
+                      )}
                     />
+                    {formErrors.name && <p className="mt-1 text-sm text-red-600">{formErrors.name}</p>}
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">Company (Optional)</label>
+                    <label className="block text-sm font-medium text-slate-900 mb-2">Company (Optional)</label>
                     <input
                       type="text"
                       value={shippingFormData.company}
@@ -339,18 +454,23 @@ export default function CartPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">Address Line 1 *</label>
+                    <label className="block text-sm font-medium text-slate-900 mb-2">Address Line 1 *</label>
                     <input
                       type="text"
                       required
                       value={shippingFormData.address1}
                       onChange={(e) => setShippingFormData(prev => ({ ...prev, address1: e.target.value }))}
-                      className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      onBlur={(e) => validateField('address1', e.target.value)}
+                      className={cn(
+                        "w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500",
+                        formErrors.address1 ? 'border-red-300' : 'border-slate-300'
+                      )}
                     />
+                    {formErrors.address1 && <p className="mt-1 text-sm text-red-600">{formErrors.address1}</p>}
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">Address Line 2 (Optional)</label>
+                    <label className="block text-sm font-medium text-slate-900 mb-2">Address Line 2 (Optional)</label>
                     <input
                       type="text"
                       value={shippingFormData.address2}
@@ -361,23 +481,32 @@ export default function CartPage() {
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-2">City *</label>
+                      <label className="block text-sm font-medium text-slate-900 mb-2">City *</label>
                       <input
                         type="text"
                         required
                         value={shippingFormData.city}
                         onChange={(e) => setShippingFormData(prev => ({ ...prev, city: e.target.value }))}
-                        className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        onBlur={(e) => validateField('city', e.target.value)}
+                        className={cn(
+                          "w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500",
+                          formErrors.city ? 'border-red-300' : 'border-slate-300'
+                        )}
                       />
+                      {formErrors.city && <p className="mt-1 text-sm text-red-600">{formErrors.city}</p>}
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-2">Province *</label>
+                      <label className="block text-sm font-medium text-slate-900 mb-2">Province *</label>
                       <select
                         required
                         value={shippingFormData.province}
                         onChange={(e) => setShippingFormData(prev => ({ ...prev, province: e.target.value }))}
-                        className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        onBlur={(e) => validateField('province', e.target.value)}
+                        className={cn(
+                          "w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500",
+                          formErrors.province ? 'border-red-300' : 'border-slate-300'
+                        )}
                       >
                         {provinces.map(province => (
                           <option key={province.code} value={province.code}>
@@ -385,23 +514,31 @@ export default function CartPage() {
                           </option>
                         ))}
                       </select>
+                      {formErrors.province && <p className="mt-1 text-sm text-red-600">{formErrors.province}</p>}
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">Postal Code *</label>
+                    <label className="block text-sm font-medium text-slate-900 mb-2">Postal Code *</label>
                     <input
                       type="text"
                       required
                       value={shippingFormData.postalCode}
-                      onChange={(e) => setShippingFormData(prev => ({ ...prev, postalCode: e.target.value }))}
-                      className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      onChange={(e) => setShippingFormData(prev => ({ ...prev, postalCode: formatCanadianPostal(e.target.value) }))}
+                      onBlur={(e) => validateField('postalCode', e.target.value)}
+                      className={cn(
+                        "w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500",
+                        formErrors.postalCode ? 'border-red-300' : 'border-slate-300'
+                      )}
                       placeholder="A1A 1A1"
+                      inputMode="text"
+                      autoCapitalize="characters"
                     />
+                    {formErrors.postalCode && <p className="mt-1 text-sm text-red-600">{formErrors.postalCode}</p>}
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">Phone (Optional)</label>
+                    <label className="block text-sm font-medium text-slate-900 mb-2">Phone (Optional)</label>
                     <input
                       type="tel"
                       value={shippingFormData.phone}
@@ -410,7 +547,7 @@ export default function CartPage() {
                     />
                   </div>
 
-                  <div className="flex gap-3 pt-4">
+                  <div className="flex gap-3 pt-6">
                     <PremiumButton
                       type="button"
                       variant="outline"
